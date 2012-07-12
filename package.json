@@ -1,0 +1,8 @@
+{
+  "name": "moneyfront",
+  "version": "0.0.1",
+  "dependencies": {
+    "stylus": "",
+    "coffee-script": ""
+  }
+}
