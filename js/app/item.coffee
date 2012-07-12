@@ -9,10 +9,10 @@ class Item extends Backbone.Model
         create_time: $.now()
 
     initialize: ->
-        if not @content
-            @content = @defaults.content
-        if not create_time
-            @create_time = @defaults.create_time
+        if not @.get "content"
+            @.set "content", @defaults.content
+        if not @.get "create_time"
+            @.set "create_time", @defaults.create_time
 
     clear: ->
         @destroy()
