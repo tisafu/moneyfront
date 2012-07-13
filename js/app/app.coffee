@@ -20,10 +20,10 @@ $ ->
     class ItemView extends Backbone.View
         tagName: "li"
         className: "item list_view"
-        template: _.template '''<div class="content"><%= content %></div>
-                                <div class="amount"><%= amount %></div>
-                                <div class="date"><%= year %>-<%= month %>-<%= date %></div>
-                                <div class="actions">
+        template: _.template '''<div class="content cell"><%= content %></div>
+                                <div class="amount cell"><%= amount %></div>
+                                <div class="date cell"><%= year %>-<%= month %>-<%= date %></div>
+                                <div class="actions cell">
                                     <a href="#" class="remove">
                                         <img src="images/destroy.png" alt="remove" title="remove" />
                                     </a>
@@ -45,8 +45,24 @@ $ ->
         delete: ->
             @model.destroy()
 
+        edit: ->
+            content = @$('.content')
+            original_val = content.text()
+            content.empty().append $('<input type="text" id="editing"></input>').val(original_val)
+            @$('#editing').focus()
+
+        editFinish: ->
+            new_val = @$('#editing').val()
+            if new_val.length? and new_val.length > 0
+                @model.set 'content', new_val
+                @model.save()
+            else
+                @$('#editing').focus()
+
         events:
             'click .remove': 'delete'
+            'dblclick .content': 'edit'
+            'focusout #editing': 'editFinish'
 
     class InputView extends Backbone.View
         el: $ '#input_view'
@@ -63,8 +79,9 @@ $ ->
             e.preventDefault()
             content = $.trim @content.val()
             amount = parseFloat @amount.val()
+
             if content? and content and amount? and _.isNumber(amount) and not _.isNaN(amount)
-                items.create content: content, amount: amount
+                items.create content: content, amount: Math.round(amount * 100) / 100
                 @content.val ''
                 @amount.val ''
             false
@@ -87,14 +104,12 @@ $ ->
         render: ->
             @count_tag.html items.length
             if items.length
-                sum = _.reduce(items.pluck('amount'), (s, n) -> s + n)
+                sum = _.reduce items.pluck('amount'), (s, n) -> s + n
                 @avg_tag.html Math.round(sum / items.length * 100) / 100
             else
                 sum = 0.0
-                @avg_tag.html 'N/A'
+                @avg_tag.html 'n/a'
             @sum_tag.html sum
-            
-            
 
     statsView = new StatsView
 
@@ -107,15 +122,17 @@ $ ->
             _.bindAll @
             items.bind 'add', @onAdd, @
             items.bind 'remove', @onRemove, @
-            items.bind 'fetch', @render, @
-            @render()
+            items.bind 'reset', @render, @
+            items.fetch()
 
         render: ->
-            if items.length? and items.length > 0
+            if items.length > 0
                 @header.show()
             else
                 @header.hide()
-            items.fetch add:true
+            items.each (item) => #!!!carefull!! -> instead of => cause this to be un-bound
+                view = new ItemView model: item
+                @list.append view.render().el
             @
 
         onAdd: (item) ->
