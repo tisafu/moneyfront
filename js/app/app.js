@@ -3,8 +3,8 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  jQuery(function() {
-    var HomeView, Item, ItemView, Items, app;
+  $(function() {
+    var InputView, Item, ItemView, Items, ItemsView, StatsView, inputView, items, itemsView, statsView;
     Item = (function(_super) {
 
       __extends(Item, _super);
@@ -41,6 +41,7 @@
       return Items;
 
     })(Backbone.Collection);
+    items = new Items;
     ItemView = (function(_super) {
 
       __extends(ItemView, _super);
@@ -49,11 +50,11 @@
         return ItemView.__super__.constructor.apply(this, arguments);
       }
 
-      ItemView.prototype.tagName = "div";
+      ItemView.prototype.tagName = "li";
 
-      ItemView.prototype.className = "item";
+      ItemView.prototype.className = "item list_view";
 
-      ItemView.prototype.template = _.template('<span class="content inline"><%= content %></span>' + '<span class="amount inline"><%= amount %></span>' + '<span class="date inline"><%= year %>-<%= month %>-<%= date %></span>' + '<button class="remove">删除</button>');
+      ItemView.prototype.template = _.template('<div class="content"><%= content %></div>\n<div class="amount"><%= amount %></div>\n<div class="date"><%= year %>-<%= month %>-<%= date %></div>\n<div class="actions">\n    <a href="#" class="remove">\n        <img src="images/destroy.png" alt="remove" title="remove" />\n    </a>\n</div>');
 
       ItemView.prototype.initialize = function() {
         _.bindAll(this);
@@ -75,68 +76,125 @@
       };
 
       ItemView.prototype.events = {
-        'click button.remove': 'delete'
+        'click .remove': 'delete'
       };
 
       return ItemView;
 
     })(Backbone.View);
-    HomeView = (function(_super) {
+    InputView = (function(_super) {
 
-      __extends(HomeView, _super);
+      __extends(InputView, _super);
 
-      function HomeView() {
-        return HomeView.__super__.constructor.apply(this, arguments);
+      function InputView() {
+        return InputView.__super__.constructor.apply(this, arguments);
       }
 
-      HomeView.prototype.el = $('#main');
+      InputView.prototype.el = $('#input_view');
 
-      HomeView.prototype.initialize = function() {
+      InputView.prototype.content = $('input#content');
+
+      InputView.prototype.amount = $('input#amount');
+
+      InputView.prototype.initialize = function() {
+        return _.bindAll(this);
+      };
+
+      InputView.prototype.render = function() {
+        return this;
+      };
+
+      InputView.prototype.submit_create = function(e) {
+        e.preventDefault();
+        if (this.content.val() && this.amount.val()) {
+          items.create({
+            content: this.content.val(),
+            amount: this.amount.val()
+          });
+          this.content.val('');
+          this.amount.val('');
+        }
+        return false;
+      };
+
+      InputView.prototype.events = {
+        'submit #input_form': 'submit_create'
+      };
+
+      return InputView;
+
+    })(Backbone.View);
+    inputView = new InputView;
+    StatsView = (function(_super) {
+
+      __extends(StatsView, _super);
+
+      function StatsView() {
+        return StatsView.__super__.constructor.apply(this, arguments);
+      }
+
+      StatsView.prototype.el = $('#stats_view');
+
+      StatsView.prototype.count = $('#count');
+
+      StatsView.prototype.avg = $('#avg');
+
+      StatsView.prototype.sum = $('#sum');
+
+      StatsView.prototype.initialize = function() {
         _.bindAll(this);
-        this.items = new Items;
-        this.items.bind('add', this.onAdd, this);
-        this.items.bind('all', this.render, this);
-        this.items.bind('fetch', this.onFetch, this);
-        return this.items.fetch({
+        return items.bind('all', this.render, this);
+      };
+
+      StatsView.prototype.render = function() {
+        this.count.html(items.length);
+        this.avg.html(items.length);
+        return this.sum.html(items.length);
+      };
+
+      return StatsView;
+
+    })(Backbone.View);
+    statsView = new StatsView;
+    ItemsView = (function(_super) {
+
+      __extends(ItemsView, _super);
+
+      function ItemsView() {
+        return ItemsView.__super__.constructor.apply(this, arguments);
+      }
+
+      ItemsView.prototype.el = $('#items_view');
+
+      ItemsView.prototype.initialize = function() {
+        _.bindAll(this);
+        items.bind('add', this.onAdd, this);
+        items.bind('fetch', this.onFetch, this);
+        return items.fetch({
           add: true
         });
       };
 
-      HomeView.prototype.onFetch = function() {
-        return this.items.each(this.onAdd);
+      ItemsView.prototype.onFetch = function() {
+        return items.each(this.onAdd);
       };
 
-      HomeView.prototype.render = function() {
-        $('#stats').empty().append(this.items.length);
+      ItemsView.prototype.render = function() {
         return this;
       };
 
-      HomeView.prototype.onAdd = function(item) {
+      ItemsView.prototype.onAdd = function(item) {
         var view;
         view = new ItemView({
           model: item
         });
-        return $('#items').append(view.render().el);
+        return $('#item_list').append(view.render().el).fadeIn();
       };
 
-      HomeView.prototype.createItem = function() {
-        if (!$('input').val()) {
-          return;
-        }
-        this.items.create({
-          content: $('input').val()
-        });
-        return $('input').val('');
-      };
-
-      HomeView.prototype.events = {
-        'click button': 'createItem'
-      };
-
-      return HomeView;
+      return ItemsView;
 
     })(Backbone.View);
-    return app = new HomeView;
+    return itemsView = new ItemsView;
   });
 
 }).call(this);

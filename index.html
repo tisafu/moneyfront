@@ -7,26 +7,43 @@
     <script type="text/javascript" src="js/vendor/underscore.js"></script>
     <script type="text/javascript" src="js/vendor/backbone.js"></script>
     <script type="text/javascript" src="js/vendor/backbone.localStorage.js"></script>
-    
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/reset/reset-min.css">
+    <link href='http://fonts.googleapis.com/css?family=Merienda+One' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header><h1>Money Front</h1></header>
-    <div role="main" id="main">
-        <div id="new">
-            <span>内容：</span>
-            <input id="new_content" type="text" />
-            <button>
-                添加
-            </button>
+    <header>
+        <h1>Money Front</h1>
+        <em>Manage your money like never before!</em>
+    </header>
+    <div role="main">
+        <div id="input_view">
+            <form id="input_form" action="" method="post" onsubmit="return false">
+                <input id="content" type="text" placeholder="item detail..." />
+                <input id="amount" type="text" placeholder="amount..." />
+                <input id="add" type="submit" value="Add" />
+            </form>
         </div>
-        <div id="items">
-            
+        <div id="items_view">
+            <div id="head" class="full list_view">
+                <div id="head-content" class="content">Content</div>
+                <div id="head-amount" class="amount">Amount</div>
+                <div id="head-date" class="date">Date</div>
+                <div id="head-actions" class="actions">Actions</div>
+            </div>
+            <ol id="item_list" class="full">
+            </ol>
         </div>
-        <div id="stats">
-            
+        <div id="stats_view">
+            <span>count:</span><span id="count">0</span>
+            <span>sum:</span><span id="sum">0</span>
+            <span>avg:</span><span id="avg">0</span>
         </div>
     </div>
-    <footer>&copy;Lambda</footer>
+    <footer>
+        <p>&copy; Lambda</p>
+        <p>This app is based on Backbone.js and CoffeeScript</p>
+    </footer>
     <script type="text/javascript" src="js/app/app.js"></script>
 </body>
 </html>

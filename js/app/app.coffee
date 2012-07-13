@@ -1,4 +1,4 @@
-jQuery ->
+$ ->
     class Item extends Backbone.Model
         defaults:
             content: "content"
@@ -13,13 +13,19 @@ jQuery ->
         model: Item
         localStorage: new Backbone.LocalStorage "items-backstore"
 
+    items = new Items
+
     class ItemView extends Backbone.View
-        tagName: "div"
-        className: "item"
-        template: _.template '<span class="content inline"><%= content %></span>'+
-            '<span class="amount inline"><%= amount %></span>'+
-            '<span class="date inline"><%= year %>-<%= month %>-<%= date %></span>'+
-            '<button class="remove">删除</button>'
+        tagName: "li"
+        className: "item list_view"
+        template: _.template '''<div class="content"><%= content %></div>
+                                <div class="amount"><%= amount %></div>
+                                <div class="date"><%= year %>-<%= month %>-<%= date %></div>
+                                <div class="actions">
+                                    <a href="#" class="remove">
+                                        <img src="images/destroy.png" alt="remove" title="remove" />
+                                    </a>
+                                </div>'''
         
         initialize: ->
             _.bindAll @
@@ -37,38 +43,67 @@ jQuery ->
             @model.destroy()
 
         events:
-            'click button.remove': 'delete'
+            'click .remove': 'delete'
 
-    class HomeView extends Backbone.View
-        el: $ '#main'
+    class InputView extends Backbone.View
+        el: $ '#input_view'
+        content: $ 'input#content'
+        amount: $ 'input#amount'
 
         initialize: ->
             _.bindAll @
-            @items = new Items
-            @items.bind 'add', @onAdd, @
-            @items.bind 'all', @render, @
-            @items.bind 'fetch', @onFetch, @
-
-            @items.fetch add:true
-
-        onFetch: ->
-            @items.each @onAdd
 
         render: ->
-            $('#stats').empty().append @items.length
+            @
+
+        submit_create: (e)->
+            e.preventDefault()
+            if @content.val() and @amount.val()
+                items.create content: @content.val(), amount: @amount.val()
+                @content.val ''
+                @amount.val ''
+            false
+
+        events:
+            'submit #input_form': 'submit_create'
+
+    inputView = new InputView
+
+    class StatsView extends Backbone.View
+        el: $ '#stats_view'
+        count: $ '#count'
+        avg: $ '#avg'
+        sum: $ '#sum'
+
+        initialize: ->
+            _.bindAll @
+            items.bind 'all', @render, @
+
+        render: ->
+            @count.html items.length
+            @avg.html items.length
+            @sum.html items.length
+
+    statsView = new StatsView
+
+    class ItemsView extends Backbone.View
+        el: $ '#items_view'
+
+        initialize: ->
+            _.bindAll @
+            items.bind 'add', @onAdd, @
+            items.bind 'fetch', @onFetch, @
+
+            items.fetch add:true
+
+        onFetch: -> # no use for now
+            items.each @onAdd
+
+        render: ->
             @
 
         onAdd: (item) ->
             view = new ItemView model: item
-            $('#items').append view.render().el
-
-        createItem: ->
-            if not $('input').val()
-                return
-            @items.create content: $('input').val()
-            $('input').val ''
-
-        events:
-            'click button': 'createItem'
+            $('#item_list').append(view.render().el).fadeIn()
             
-    app = new HomeView
+    itemsView = new ItemsView
