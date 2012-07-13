@@ -10,7 +10,7 @@ header {
 footer {
   text-align: center;
   margin: 20px auto 0 auto;
-  font-size: 0.75em;
+  font-size: 0.8em;
   color: rgba(100,100,100,0.7);
 }
 h1 {
@@ -27,8 +27,17 @@ a {
 .full {
   width: 100%;
 }
+.list_view {
+  vertical-align: middle;
+  padding: 0;
+  line-height: 100%;
+}
 .list_view > * {
   display: inline-block;
+}
+#input_view #info {
+  text-align: center;
+  margin: 10px auto;
 }
 #input_view #input_form {
   margin: 0 auto;
@@ -69,9 +78,17 @@ a {
   font-size: 1.2em;
   margin: 7px auto;
 }
+#items_view .cell {
+  padding: 7px 2%;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+#items_view #head .cell {
+  background-color: rgba(20,130,20,0.6);
+  vertical-align: middle;
+}
 #items_view li {
-  padding: 7px 0;
-  height: 20px;
   vertical-align: middle;
 }
 #items_view .content {
@@ -80,8 +97,6 @@ a {
 #items_view .amount {
   width: 15%;
   text-align: right;
-  padding: 0 10px;
-  margin: 0 10px;
 }
 #items_view .date {
   width: 15%;

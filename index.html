@@ -17,6 +17,7 @@
         <em>Manage your money like never before!</em>
     </header>
     <div role="main">
+        
         <div id="input_view">
             <form id="input_form" action="" method="post" onsubmit="return function(e){e.preventDefault();return false;}">
                 <input id="content" type="text" required="true" placeholder="item detail..." />
@@ -26,10 +27,10 @@
         </div>
         <div id="items_view">
             <div id="head" class="full list_view">
-                <div id="head-content" class="content">Content</div>
-                <div id="head-amount" class="amount">Amount</div>
-                <div id="head-date" class="date">Date</div>
-                <div id="head-actions" class="actions">Actions</div>
+                <div id="head-content" class="content cell">Content</div>
+                <div id="head-amount" class="amount cell">Amount</div>
+                <div id="head-date" class="date cell">Date</div>
+                <div id="head-actions" class="actions cell">Actions</div>
             </div>
             <ol id="item_list" class="full">
             </ol>
@@ -37,11 +38,11 @@
         <div id="stats_view">
             <span>count: </span><span id="count">0</span>
             <span>sum: </span><span id="sum">0</span>
-            <span>avg: </span><span id="avg">0</span>
+            <span>avg: </span><span id="avg">n/a</span>
         </div>
     </div>
     <footer>
-        <p>&copy; Lambda</p>
+        <p>&copy; <a href="mailto:jimexist@gmail.com">Lambda</a></p>
         <p>This app is based on Backbone.js and CoffeeScript</p>
     </footer>
     <script type="text/javascript" src="js/app/app.js"></script>

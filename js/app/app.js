@@ -58,7 +58,7 @@
 
       ItemView.prototype.className = "item list_view";
 
-      ItemView.prototype.template = _.template('<div class="content"><%= content %></div>\n<div class="amount"><%= amount %></div>\n<div class="date"><%= year %>-<%= month %>-<%= date %></div>\n<div class="actions">\n    <a href="#" class="remove">\n        <img src="images/destroy.png" alt="remove" title="remove" />\n    </a>\n</div>');
+      ItemView.prototype.template = _.template('<div class="content cell"><%= content %></div>\n<div class="amount cell"><%= amount %></div>\n<div class="date cell"><%= year %>-<%= month %>-<%= date %></div>\n<div class="actions cell">\n    <a href="#" class="remove">\n        <img src="images/destroy.png" alt="remove" title="remove" />\n    </a>\n</div>');
 
       ItemView.prototype.initialize = function() {
         _.bindAll(this);
@@ -81,8 +81,29 @@
         return this.model.destroy();
       };
 
+      ItemView.prototype.edit = function() {
+        var content, original_val;
+        content = this.$('.content');
+        original_val = content.text();
+        content.empty().append($('<input type="text" id="editing"></input>').val(original_val));
+        return this.$('#editing').focus();
+      };
+
+      ItemView.prototype.editFinish = function() {
+        var new_val;
+        new_val = this.$('#editing').val();
+        if ((new_val.length != null) && new_val.length > 0) {
+          this.model.set('content', new_val);
+          return this.model.save();
+        } else {
+          return this.$('#editing').focus();
+        }
+      };
+
       ItemView.prototype.events = {
-        'click .remove': 'delete'
+        'click .remove': 'delete',
+        'dblclick .content': 'edit',
+        'focusout #editing': 'editFinish'
       };
 
       return ItemView;
@@ -118,7 +139,7 @@
         if ((content != null) && content && (amount != null) && _.isNumber(amount) && !_.isNaN(amount)) {
           items.create({
             content: content,
-            amount: amount
+            amount: Math.round(amount * 100) / 100
           });
           this.content.val('');
           this.amount.val('');
@@ -165,7 +186,7 @@
           this.avg_tag.html(Math.round(sum / items.length * 100) / 100);
         } else {
           sum = 0.0;
-          this.avg_tag.html('N/A');
+          this.avg_tag.html('n/a');
         }
         return this.sum_tag.html(sum);
       };
@@ -192,18 +213,23 @@
         _.bindAll(this);
         items.bind('add', this.onAdd, this);
         items.bind('remove', this.onRemove, this);
-        items.bind('fetch', this.render, this);
-        return this.render();
+        items.bind('reset', this.render, this);
+        return items.fetch();
       };
 
       ItemsView.prototype.render = function() {
-        if ((items.length != null) && items.length > 0) {
+        var _this = this;
+        if (items.length > 0) {
           this.header.show();
         } else {
           this.header.hide();
         }
-        items.fetch({
-          add: true
+        items.each(function(item) {
+          var view;
+          view = new ItemView({
+            model: item
+          });
+          return _this.list.append(view.render().el);
         });
         return this;
       };
