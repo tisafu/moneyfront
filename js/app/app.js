@@ -38,6 +38,10 @@
 
       Items.prototype.localStorage = new Backbone.LocalStorage("items-backstore");
 
+      Items.prototype.comparator = function(item) {
+        return item.get('create_time');
+      };
+
       return Items;
 
     })(Backbone.Collection);
@@ -68,7 +72,9 @@
       };
 
       ItemView.prototype.unrender = function() {
-        return $(this.el).remove();
+        return $(this.el).slideUp('fast', function() {
+          return $(this.el).remove;
+        });
       };
 
       ItemView.prototype["delete"] = function() {
@@ -105,11 +111,14 @@
       };
 
       InputView.prototype.submit_create = function(e) {
+        var amount, content;
         e.preventDefault();
-        if (this.content.val() && this.amount.val()) {
+        content = $.trim(this.content.val());
+        amount = parseFloat(this.amount.val());
+        if ((content != null) && content && (amount != null) && _.isNumber(amount) && !_.isNaN(amount)) {
           items.create({
-            content: this.content.val(),
-            amount: this.amount.val()
+            content: content,
+            amount: amount
           });
           this.content.val('');
           this.amount.val('');
@@ -135,11 +144,11 @@
 
       StatsView.prototype.el = $('#stats_view');
 
-      StatsView.prototype.count = $('#count');
+      StatsView.prototype.count_tag = $('#count');
 
-      StatsView.prototype.avg = $('#avg');
+      StatsView.prototype.avg_tag = $('#avg');
 
-      StatsView.prototype.sum = $('#sum');
+      StatsView.prototype.sum_tag = $('#sum');
 
       StatsView.prototype.initialize = function() {
         _.bindAll(this);
@@ -147,9 +156,18 @@
       };
 
       StatsView.prototype.render = function() {
-        this.count.html(items.length);
-        this.avg.html(items.length);
-        return this.sum.html(items.length);
+        var sum;
+        this.count_tag.html(items.length);
+        if (items.length) {
+          sum = _.reduce(items.pluck('amount'), function(s, n) {
+            return s + n;
+          });
+          this.avg_tag.html(Math.round(sum / items.length * 100) / 100);
+        } else {
+          sum = 0.0;
+          this.avg_tag.html('N/A');
+        }
+        return this.sum_tag.html(sum);
       };
 
       return StatsView;
@@ -166,29 +184,54 @@
 
       ItemsView.prototype.el = $('#items_view');
 
+      ItemsView.prototype.header = $('#head');
+
+      ItemsView.prototype.list = $('#item_list');
+
       ItemsView.prototype.initialize = function() {
         _.bindAll(this);
         items.bind('add', this.onAdd, this);
-        items.bind('fetch', this.onFetch, this);
-        return items.fetch({
-          add: true
-        });
-      };
-
-      ItemsView.prototype.onFetch = function() {
-        return items.each(this.onAdd);
+        items.bind('remove', this.onRemove, this);
+        items.bind('fetch', this.render, this);
+        return this.render();
       };
 
       ItemsView.prototype.render = function() {
+        if ((items.length != null) && items.length > 0) {
+          this.header.show();
+        } else {
+          this.header.hide();
+        }
+        items.fetch({
+          add: true
+        });
         return this;
       };
 
       ItemsView.prototype.onAdd = function(item) {
         var view;
+        this.header.fadeIn();
         view = new ItemView({
           model: item
         });
-        return $('#item_list').append(view.render().el).fadeIn();
+        return $(view.render().el).hide().appendTo(this.list).slideDown();
+      };
+
+      ItemsView.prototype.onRemove = function(item) {
+        if (items.length === 0) {
+          return this.header.fadeOut();
+        }
+      };
+
+      ItemsView.prototype.sortByContent = function() {
+        items.comparator = function(item) {
+          return item.get('content');
+        };
+        return items.sort();
+      };
+
+      ItemsView.prototype.events = {
+        'click #head-content': 'sortByContent'
       };
 
       return ItemsView;

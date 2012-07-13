@@ -18,10 +18,10 @@
     </header>
     <div role="main">
         <div id="input_view">
-            <form id="input_form" action="" method="post" onsubmit="return false">
-                <input id="content" type="text" placeholder="item detail..." />
-                <input id="amount" type="text" placeholder="amount..." />
-                <input id="add" type="submit" value="Add" />
+            <form id="input_form" action="" method="post" onsubmit="return function(e){e.preventDefault();return false;}">
+                <input id="content" type="text" required="true" placeholder="item detail..." />
+                <input id="amount" type="text" required="true" placeholder="amount..." />
+                <input id="add" type="submit" value="✔" />
             </form>
         </div>
         <div id="items_view">
@@ -35,9 +35,9 @@
             </ol>
         </div>
         <div id="stats_view">
-            <span>count:</span><span id="count">0</span>
-            <span>sum:</span><span id="sum">0</span>
-            <span>avg:</span><span id="avg">0</span>
+            <span>count: </span><span id="count">0</span>
+            <span>sum: </span><span id="sum">0</span>
+            <span>avg: </span><span id="avg">0</span>
         </div>
     </div>
     <footer>

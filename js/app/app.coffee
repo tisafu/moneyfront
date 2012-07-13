@@ -12,6 +12,8 @@ $ ->
     class Items extends Backbone.Collection
         model: Item
         localStorage: new Backbone.LocalStorage "items-backstore"
+        comparator: (item) ->
+            item.get 'create_time'
 
     items = new Items
 
@@ -37,7 +39,8 @@ $ ->
             @
 
         unrender: ->
-            $(@el).remove()
+            $(@el).slideUp 'fast', ->
+                $(@el).remove
 
         delete: ->
             @model.destroy()
@@ -58,8 +61,10 @@ $ ->
 
         submit_create: (e)->
             e.preventDefault()
-            if @content.val() and @amount.val()
-                items.create content: @content.val(), amount: @amount.val()
+            content = $.trim @content.val()
+            amount = parseFloat @amount.val()
+            if content? and content and amount? and _.isNumber(amount) and not _.isNaN(amount)
+                items.create content: content, amount: amount
                 @content.val ''
                 @amount.val ''
             false
@@ -71,39 +76,63 @@ $ ->
 
     class StatsView extends Backbone.View
         el: $ '#stats_view'
-        count: $ '#count'
-        avg: $ '#avg'
-        sum: $ '#sum'
+        count_tag: $ '#count'
+        avg_tag: $ '#avg'
+        sum_tag: $ '#sum'
 
         initialize: ->
             _.bindAll @
-            items.bind 'all', @render, @
+            items.bind 'all', @render, @ # always re-render
 
         render: ->
-            @count.html items.length
-            @avg.html items.length
-            @sum.html items.length
+            @count_tag.html items.length
+            if items.length
+                sum = _.reduce(items.pluck('amount'), (s, n) -> s + n)
+                @avg_tag.html Math.round(sum / items.length * 100) / 100
+            else
+                sum = 0.0
+                @avg_tag.html 'N/A'
+            @sum_tag.html sum
+            
+            
 
     statsView = new StatsView
 
     class ItemsView extends Backbone.View
         el: $ '#items_view'
+        header: $ '#head'
+        list: $ '#item_list'
 
         initialize: ->
             _.bindAll @
             items.bind 'add', @onAdd, @
-            items.bind 'fetch', @onFetch, @
-
-            items.fetch add:true
-
-        onFetch: -> # no use for now
-            items.each @onAdd
+            items.bind 'remove', @onRemove, @
+            items.bind 'fetch', @render, @
+            @render()
 
         render: ->
+            if items.length? and items.length > 0
+                @header.show()
+            else
+                @header.hide()
+            items.fetch add:true
             @
 
         onAdd: (item) ->
+            @header.fadeIn() # if the header is not shown, show it first
             view = new ItemView model: item
-            $('#item_list').append(view.render().el).fadeIn()
-            
+            $(view.render().el).hide().appendTo(@list).slideDown()
+
+        onRemove: (item) ->
+            if items.length == 0
+                @header.fadeOut()
+
+        sortByContent: ->
+            items.comparator = (item) ->
+                item.get 'content'
+            items.sort()
+
+        events:
+            'click #head-content': 'sortByContent'
+
     itemsView = new ItemsView
